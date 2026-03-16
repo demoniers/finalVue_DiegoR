@@ -1,75 +1,3 @@
-<script setup>
-import { ref, onMounted } from 'vue';
-import { ClientesService, VehiculosService, ModelosService, MarcasService } from '../services/api';
-
-const clientes = ref([]);
-const selectedCliente = ref(null);
-const loading = ref(true);
-
-const clientForm = ref({
-  nombre: '',
-  dni: '',
-  alquileres: []
-});
-
-const loadData = async () => {
-  loading.value = true;
-  try {
-    const res = await ClientesService.getAll();
-    clientes.value = res.data;
-  } catch (error) {
-    console.error("Error loading clients:", error);
-  } finally {
-    loading.value = false;
-  }
-};
-
-const selectCliente = (cliente) => {
-  selectedCliente.value = { ...cliente };
-  clientForm.value = { ...cliente };
-};
-
-const deselect = () => {
-  selectedCliente.value = null;
-  clientForm.value = { nombre: '', dni: '', alquileres: [] };
-};
-
-const saveCliente = async () => {
-  try {
-    if (selectedCliente.value) {
-      // Update
-      const res = await ClientesService.update(selectedCliente.value.id, clientForm.value);
-      const index = clientes.value.findIndex(c => c.id === selectedCliente.value.id);
-      clientes.value[index] = res.data;
-    } else {
-      // Create
-      const res = await ClientesService.create({
-        ...clientForm.value,
-        id: String(Date.now()),
-        alquileres: []
-      });
-      clientes.value.push(res.data);
-    }
-    deselect();
-  } catch (error) {
-    console.error("Error saving client:", error);
-  }
-};
-
-const deleteCliente = async (id) => {
-  if (!confirm('¿Está seguro de que desea eliminar este cliente?')) return;
-  try {
-    await ClientesService.delete(id);
-    clientes.value = clientes.value.filter(c => c.id !== id);
-    deselect();
-  } catch (error) {
-    console.error("Error deleting client:", error);
-  }
-};
-
-onMounted(loadData);
-</script>
-
 <template>
   <div class="clientes-view">
     <h1>Gestión de Clientes</h1>
@@ -150,6 +78,78 @@ onMounted(loadData);
   </div>
 </template>
 
+<script setup>
+import { ref, onMounted } from 'vue';
+import { ClientesService } from '../services/api';
+
+const clientes = ref([]);
+const selectedCliente = ref(null);
+const loading = ref(true);
+
+const clientForm = ref({
+  nombre: '',
+  dni: '',
+  alquileres: []
+});
+
+const loadData = async () => {
+  loading.value = true;
+  try {
+    const res = await ClientesService.getAll();
+    clientes.value = res.data;
+  } catch (error) {
+    console.error("Error loading clients:", error);
+  } finally {
+    loading.value = false;
+  }
+};
+
+const selectCliente = (cliente) => {
+  selectedCliente.value = { ...cliente };
+  clientForm.value = { ...cliente };
+};
+
+const deselect = () => {
+  selectedCliente.value = null;
+  clientForm.value = { nombre: '', dni: '', alquileres: [] };
+};
+
+const saveCliente = async () => {
+  try {
+    if (selectedCliente.value) {
+      // Update
+      const res = await ClientesService.update(selectedCliente.value.id, clientForm.value);
+      const index = clientes.value.findIndex(c => c.id === selectedCliente.value.id);
+      clientes.value[index] = res.data;
+    } else {
+      // Create
+      const res = await ClientesService.create({
+        ...clientForm.value,
+        id: String(Date.now()),
+        alquileres: []
+      });
+      clientes.value.push(res.data);
+    }
+    deselect();
+  } catch (error) {
+    console.error("Error saving client:", error);
+  }
+};
+
+const deleteCliente = async (id) => {
+  if (!confirm('¿Está seguro de que desea eliminar este cliente?')) return;
+  try {
+    await ClientesService.delete(id);
+    clientes.value = clientes.value.filter(c => c.id !== id);
+    deselect();
+  } catch (error) {
+    console.error("Error deleting client:", error);
+  }
+};
+
+onMounted(loadData);
+</script>
+
 <style scoped>
 .master-detail {
   display: grid;
@@ -188,11 +188,11 @@ onMounted(loadData);
 }
 
 .client-list li:hover {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(0, 0, 0, 0.02);
 }
 
 .client-list li.active {
-  background: rgba(56, 189, 248, 0.1);
+  background: var(--bg-dark);
   border-left: 4px solid var(--accent);
 }
 

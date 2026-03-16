@@ -1,7 +1,3 @@
-<script setup>
-import Sidebar from './components/Sidebar.vue'
-</script>
-
 <template>
   <div class="app-container">
     <Sidebar />
@@ -14,6 +10,10 @@ import Sidebar from './components/Sidebar.vue'
     </main>
   </div>
 </template>
+
+<script setup>
+import Sidebar from './components/Sidebar.vue'
+</script>
 
 <style>
 .fade-enter-active,

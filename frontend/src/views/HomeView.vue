@@ -38,10 +38,7 @@
 .hero h1 {
   font-size: 3rem;
   margin-bottom: 1rem;
-  background: linear-gradient(to right, var(--accent), var(--primary));
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--primary);
 }
 
 .logo-img {
@@ -49,7 +46,7 @@
   height: auto;
   border-radius: 1rem;
   margin-top: 2rem;
-  box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
 .grid {

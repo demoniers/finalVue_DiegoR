@@ -1,3 +1,86 @@
+<template>
+  <div class="alquiler-view">
+    <h1>Contratar Alquiler</h1>
+
+    <!-- Step 1: Selection -->
+    <div v-if="step === 1" class="step-container card">
+      <h3>1. Selección de Vehículo</h3>
+      <div class="form-group">
+        <label>Marca</label>
+        <select v-model="selectedMarca">
+          <option value="" disabled>Seleccione una marca</option>
+          <option v-for="b in marcas" :key="b.id" :value="b.id">{{ b.nombre }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Modelo</label>
+        <select v-model="selectedModelo" :disabled="!selectedMarca">
+          <option value="" disabled>Seleccione un modelo</option>
+          <option v-for="m in filteredModelos" :key="m.id" :value="m.id">{{ m.modelo }}</option>
+        </select>
+      </div>
+
+      <button @click="goToDetails" class="btn btn-primary" :disabled="!canProceedToDetails">Continuar</button>
+    </div>
+
+    <!-- Step 2: Form Details -->
+    <div v-if="step === 2" class="step-container card">
+      <button @click="step = 1" class="btn btn-secondary btn-sm mb-1">Volver</button>
+      <h3>2. Detalles del Alquiler</h3>
+      
+      <form @submit.prevent="finalizeBooking">
+        <label>Vehículo Disponible (Precio/Día)</label>
+        <select v-model="rentForm.vehiculoId" required>
+          <option value="" disabled>Seleccione el vehículo específico</option>
+          <option v-for="v in availableVehicles" :key="v.id" :value="v.id">
+             Ref: {{ v.id }} - {{ v.precioDia + (modelos.find(m => m.id === selectedModelo)?.extraPorModelo || 0) }}€/día
+          </option>
+        </select>
+
+        <label>Cliente</label>
+        <select v-model="rentForm.clienteId" required>
+          <option value="" disabled>Seleccione el cliente</option>
+          <option v-for="c in clientes" :key="c.id" :value="c.id">{{ c.nombre }} ({{ c.dni }})</option>
+        </select>
+
+        <div class="grid-2">
+          <div>
+            <label>Nº de Días</label>
+            <input v-model.number="rentForm.numDias" type="number" min="1" required>
+          </div>
+          <div>
+            <label>Fecha de Inicio</label>
+            <input v-model="rentForm.fechaInic" type="date" required>
+          </div>
+        </div>
+
+        <div v-if="rentForm.vehiculoId" class="price-summary card">
+          Total a Pagar: <span class="total">{{ calculateTotal(rentForm.vehiculoId).toFixed(2) }}€</span>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100">Confirmar Alquiler</button>
+      </form>
+    </div>
+
+    <!-- Step 3: Success Summary -->
+    <div v-if="step === 3" class="step-container success-card card">
+      <div class="success-icon">✅</div>
+      <h2>¡Alquiler Confirmado!</h2>
+      <div class="summary-details">
+        <p><strong>Marca:</strong> {{ bookingSummary.brand }}</p>
+        <p><strong>Modelo:</strong> {{ bookingSummary.model }}</p>
+        <p><strong>Cliente:</strong> {{ bookingSummary.customer }} (DNI: {{ clientes.find(c => c.nombre === bookingSummary.customer)?.dni }})</p>
+        <p><strong>Fecha:</strong> {{ bookingSummary.startDate }}</p>
+        <p><strong>Duración:</strong> {{ bookingSummary.days }} días</p>
+        <hr>
+        <p class="final-total"><strong>Precio Total:</strong> {{ bookingSummary.total.toFixed(2) }}€</p>
+      </div>
+      <button @click="reset" class="btn btn-primary">Nuevo Alquiler</button>
+    </div>
+  </div>
+</template>
+
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue';
 import { MarcasService, ModelosService, VehiculosService, ClientesService } from '../services/api';
@@ -120,89 +203,6 @@ watch(selectedMarca, () => {
 onMounted(loadData);
 </script>
 
-<template>
-  <div class="alquiler-view">
-    <h1>Contratar Alquiler</h1>
-
-    <!-- Step 1: Selection -->
-    <div v-if="step === 1" class="step-container card">
-      <h3>1. Selección de Vehículo</h3>
-      <div class="form-group">
-        <label>Marca</label>
-        <select v-model="selectedMarca">
-          <option value="" disabled>Seleccione una marca</option>
-          <option v-for="b in marcas" :key="b.id" :value="b.id">{{ b.nombre }}</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>Modelo</label>
-        <select v-model="selectedModelo" :disabled="!selectedMarca">
-          <option value="" disabled>Seleccione un modelo</option>
-          <option v-for="m in filteredModelos" :key="m.id" :value="m.id">{{ m.modelo }}</option>
-        </select>
-      </div>
-
-      <button @click="goToDetails" class="btn btn-primary" :disabled="!canProceedToDetails">Continuar</button>
-    </div>
-
-    <!-- Step 2: Form Details -->
-    <div v-if="step === 2" class="step-container card">
-      <button @click="step = 1" class="btn btn-secondary btn-sm mb-1">Volver</button>
-      <h3>2. Detalles del Alquiler</h3>
-      
-      <form @submit.prevent="finalizeBooking">
-        <label>Vehículo Disponible (Precio/Día)</label>
-        <select v-model="rentForm.vehiculoId" required>
-          <option value="" disabled>Seleccione el vehículo específico</option>
-          <option v-for="v in availableVehicles" :key="v.id" :value="v.id">
-             Ref: {{ v.id }} - {{ v.precioDia + (modelos.find(m => m.id === selectedModelo)?.extraPorModelo || 0) }}€/día
-          </option>
-        </select>
-
-        <label>Cliente</label>
-        <select v-model="rentForm.clienteId" required>
-          <option value="" disabled>Seleccione el cliente</option>
-          <option v-for="c in clientes" :key="c.id" :value="c.id">{{ c.nombre }} ({{ c.dni }})</option>
-        </select>
-
-        <div class="grid-2">
-          <div>
-            <label>Nº de Días</label>
-            <input v-model.number="rentForm.numDias" type="number" min="1" required>
-          </div>
-          <div>
-            <label>Fecha de Inicio</label>
-            <input v-model="rentForm.fechaInic" type="date" required>
-          </div>
-        </div>
-
-        <div v-if="rentForm.vehiculoId" class="price-summary card">
-          Total a Pagar: <span class="total">{{ calculateTotal(rentForm.vehiculoId).toFixed(2) }}€</span>
-        </div>
-
-        <button type="submit" class="btn btn-primary w-100">Confirmar Alquiler</button>
-      </form>
-    </div>
-
-    <!-- Step 3: Success Summary -->
-    <div v-if="step === 3" class="step-container success-card card">
-      <div class="success-icon">✅</div>
-      <h2>¡Alquiler Confirmado!</h2>
-      <div class="summary-details">
-        <p><strong>Marca:</strong> {{ bookingSummary.brand }}</p>
-        <p><strong>Modelo:</strong> {{ bookingSummary.model }}</p>
-        <p><strong>Cliente:</strong> {{ bookingSummary.customer }}</p>
-        <p><strong>Fecha:</strong> {{ bookingSummary.startDate }}</p>
-        <p><strong>Duración:</strong> {{ bookingSummary.days }} días</p>
-        <hr>
-        <p class="final-total"><strong>Precio Total:</strong> {{ bookingSummary.total.toFixed(2) }}€</p>
-      </div>
-      <button @click="reset" class="btn btn-primary">Nuevo Alquiler</button>
-    </div>
-  </div>
-</template>
-
 <style scoped>
 .step-container {
   max-width: 600px;
@@ -246,7 +246,7 @@ onMounted(loadData);
 
 .summary-details {
   text-align: left;
-  background: rgba(255,255,255,0.03);
+  background: rgba(0,0,0,0.02);
   padding: 1.5rem;
   border-radius: 0.5rem;
   margin: 1.5rem 0;

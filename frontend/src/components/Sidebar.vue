@@ -9,20 +9,29 @@
           <i class="fas fa-home"></i> <span>Inicio</span>
         </router-link>
       </li>
-      <li>
+      <li class="nav-group">
         <router-link to="/marcas" class="nav-link" active-class="active">
           <i class="fas fa-tags"></i> <span>Marcas</span>
         </router-link>
+        <ul class="sub-nav">
+          <li><router-link to="/marcas?action=new" class="nav-link-sub">Nueva marca</router-link></li>
+        </ul>
       </li>
-      <li>
+      <li class="nav-group">
         <router-link to="/modelos" class="nav-link" active-class="active">
           <i class="fas fa-car-side"></i> <span>Modelos</span>
         </router-link>
+        <ul class="sub-nav">
+          <li><router-link to="/modelos?action=new" class="nav-link-sub">Nuevo Modelo</router-link></li>
+        </ul>
       </li>
-      <li>
+      <li class="nav-group">
         <router-link to="/vehiculos" class="nav-link" active-class="active">
           <i class="fas fa-car"></i> <span>Vehículos</span>
         </router-link>
+        <ul class="sub-nav">
+          <li><router-link to="/vehiculos?action=new" class="nav-link-sub">Nuevo Vehículo</router-link></li>
+        </ul>
       </li>
       <li>
         <router-link to="/alquiler" class="nav-link" active-class="active">
